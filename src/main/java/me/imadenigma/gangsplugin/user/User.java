@@ -2,6 +2,7 @@ package me.imadenigma.gangsplugin.user;
 
 import com.google.common.base.Preconditions;
 import me.imadenigma.gangsplugin.gangs.Gang;
+import me.imadenigma.gangsplugin.utils.Messenger;
 import me.lucko.helper.gson.GsonSerializable;
 import me.lucko.helper.utils.Players;
 import org.bukkit.OfflinePlayer;
@@ -10,7 +11,7 @@ import org.bukkit.entity.Player;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface User extends GsonSerializable {
+public interface User extends GsonSerializable, Messenger {
 
     default UUID getUniqueID() {
         return this.getOfflinePlayer().getUniqueId();
@@ -37,6 +38,12 @@ public interface User extends GsonSerializable {
     void disableChat();
 
     void invite(User user);
+
+    void setRank(Rank rank);
+
+    void increaseRank();
+
+    void decreaseRank();
 
     static User getFromBukkit(final Player player) {
         Preconditions.checkNotNull(player, "Player may not be null");

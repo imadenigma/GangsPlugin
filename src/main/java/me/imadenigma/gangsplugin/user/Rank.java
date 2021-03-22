@@ -6,7 +6,12 @@ public enum Rank {
     CoLeader(3),
     OWNER(4);
 
-
+    private final int level;
     Rank(int level) {
+        this.level = level;
+    }
+
+    public int getLevel() {
+        return level;
     }
 }

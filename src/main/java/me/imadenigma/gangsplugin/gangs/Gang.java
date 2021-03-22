@@ -1,12 +1,13 @@
 package me.imadenigma.gangsplugin.gangs;
 
 import me.imadenigma.gangsplugin.user.User;
+import me.imadenigma.gangsplugin.utils.Messenger;
 import me.lucko.helper.gson.GsonSerializable;
 
 import java.util.Set;
 import java.util.UUID;
 
-public interface Gang extends GsonSerializable {
+public interface Gang extends GsonSerializable, Messenger {
 
     UUID getUniqueID();
 

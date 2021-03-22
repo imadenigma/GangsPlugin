@@ -3,7 +3,9 @@ package me.imadenigma.gangsplugin.gangs;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import me.imadenigma.gangsplugin.Configuration;
 import me.imadenigma.gangsplugin.user.User;
+import me.imadenigma.gangsplugin.utils.MessagesHandler;
 import me.lucko.helper.gson.JsonBuilder;
 import org.jetbrains.annotations.NotNull;
 import java.util.Set;
@@ -16,12 +18,13 @@ public class GangImpl implements Gang {
     private Set<User> members = Sets.newHashSet();
     private long balance;
     private long minedBlocks;
-
-    public GangImpl(String name) {
+    private User leader;
+    public GangImpl(String name,User leader) {
         this.uniqueID = UUID.randomUUID();
         this.name = name;
         this.balance = 0L;
         this.minedBlocks = 0L;
+        this.leader = leader;
     }
 
 
@@ -53,7 +56,9 @@ public class GangImpl implements Gang {
 
     @Override
     public void addMember(final User user) {
+        if (this.members.size() >= Configuration.getConfig().getNode("gangs","max-members").getInt(10)) return;
         this.members.add(user);
+        this.msgC("gang","join-msg");
     }
 
     @Override
@@ -78,6 +83,17 @@ public class GangImpl implements Gang {
 
     @Override
     public void destroy() {
+        this.getMembers().forEach(member -> {
+            member.setGang(null);
+            member.updateLastGang();
+            member.disableChat();
+            member.msgC("messages","gang","destroy-msg");
+        });
+        this.members = null;
+        this.minedBlocks = 0L;
+        this.name = null;
+        this.balance = 0L;
+        GangManager.getGangs().remove(this);
 
     }
 
@@ -95,5 +111,29 @@ public class GangImpl implements Gang {
                 .add("minedBlocks",this.minedBlocks)
                 .add("members",array)
                 .build();
+    }
+
+    @Override
+    public void msg(@NotNull String msg) {
+        for (User user : this.members) {
+            user.msg(msg);
+        }
+    }
+
+    @Override
+    public void msgC(String... path) {
+        final String message = Configuration.getLanguage().getNode((Object[]) path).getString("default message");
+        if (message.equalsIgnoreCase("")) return;
+        for (User user : this.members) {
+            user.msg(message);
+        }
+    }
+
+    @Override
+    public void msgH(@NotNull String msg, @NotNull Object... replacements) {
+        final String message = MessagesHandler.INSTANCE.handleMessage(msg,replacements);
+        for (User user : this.members) {
+            user.msg(message);
+        }
     }
 }
