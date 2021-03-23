@@ -1,20 +1,15 @@
 package me.imadenigma.gangsplugin;
 
-import me.imadenigma.gangsplugin.commands.CreateCommand;
+import me.imadenigma.gangsplugin.commands.GangCommands;
 import me.imadenigma.gangsplugin.economy.EconomyManager;
 import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.listeners.PlayerListeners;
-import me.imadenigma.gangsplugin.user.UserImpl;
 import me.imadenigma.gangsplugin.user.UserManager;
-import me.lucko.helper.Commands;
-import me.lucko.helper.Helper;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import me.lucko.helper.plugin.ap.Plugin;
 import me.lucko.helper.plugin.ap.PluginDependency;
-import org.bukkit.Bukkit;
-import org.bukkit.command.defaults.BukkitCommand;
+import me.mattstudios.mf.base.CommandManager;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
@@ -31,7 +26,6 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
 
     private UserManager userManager;
     private GangManager gangManager;
-    private Configuration configuration;
 
     @Override
     public void enable() {
@@ -48,17 +42,14 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
             e.printStackTrace();
         }
         try {
-            this.configuration = new Configuration();
+            new Configuration();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         registerListener(new PlayerListeners());
         new EconomyManager();
-        new me.mattstudios.mf.base.CommandManager(this).register(new CreateCommand());
-        Commands.create().handler(c -> {
-            new UserImpl("7assan",null, Bukkit.getOfflinePlayer("JohanLiebert1"));
-        }).register("hassan");
+        new CommandManager(this).register(new GangCommands());
 
     }
 

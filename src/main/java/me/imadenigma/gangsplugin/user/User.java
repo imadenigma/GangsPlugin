@@ -49,7 +49,11 @@ public interface User extends GsonSerializable, Messenger, Economy {
 
     void decreaseRank();
 
+    Rank getRank();
+
     Gang getPresentGang();
+
+    String getName();
 
     static User getFromBukkit(final Player player) {
         Preconditions.checkNotNull(player, "Player may not be null");

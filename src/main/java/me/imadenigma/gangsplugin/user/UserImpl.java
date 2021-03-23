@@ -76,7 +76,7 @@ public class UserImpl implements User {
     }
 
     @Override
-    public void setGang(Gang gang) {
+    public void setGang(final Gang gang) {
         Preconditions.checkNotNull(gang,"Gang may not be null");
         if (this.gang.isPresent()) {
             this.presentGang.kickMember(this);
@@ -152,8 +152,18 @@ public class UserImpl implements User {
     }
 
     @Override
+    public Rank getRank() {
+        return this.rank;
+    }
+
+    @Override
     public Gang getPresentGang() {
         return this.presentGang;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
     }
 
 
