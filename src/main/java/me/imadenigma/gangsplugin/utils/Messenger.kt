@@ -8,5 +8,7 @@ interface Messenger {
 
     fun msgH(msg: String, vararg replacements: Any) //message that contains placeholders
 
+    fun msgCH(vararg path: String, replacements: Array<Any>)
+
 
 }

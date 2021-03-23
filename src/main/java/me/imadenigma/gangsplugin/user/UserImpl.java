@@ -12,47 +12,48 @@ import me.lucko.helper.text3.event.ClickEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
-public class UserImpl extends EconomyManager implements User {
+public class UserImpl implements User {
 
     private final UUID uniqueID;
     private String name;
-    private Optional<Gang> gang;
+    private Optional<UUID> gang;
     private UUID lastGang;
     private final OfflinePlayer offlinePlayer;
     private Rank rank;
     private boolean chatEnabled;
+    private Gang presentGang;
 
-
-    public UserImpl(final String name, final Gang gang, OfflinePlayer offlinePlayer) {
+    public UserImpl(final String name, final UUID gang, OfflinePlayer offlinePlayer) {
         this.uniqueID = offlinePlayer.getUniqueId();
         this.name = name;
         this.offlinePlayer = offlinePlayer;
+        this.gang = Optional.empty();
+        UserManager.getUsers().add(this);
         if (gang != null) {
             this.gang = Optional.of(gang);
-            this.lastGang = gang.getUniqueID();
+            this.lastGang = gang;
+            this.presentGang = Gang.getFromUUID(gang);
         }
     }
 
 
     @Override
     public double getBalance() {
-        return this.economylib.getBalance(this.offlinePlayer);
+        return EconomyManager.INSTANCE.getEconomylib().getBalance(this.offlinePlayer);
     }
 
     @Override
     public double withdrawBalance(long value) {
-        return this.economylib.withdrawPlayer(this.offlinePlayer,value).amount;
+        return EconomyManager.INSTANCE.getEconomylib().withdrawPlayer(this.offlinePlayer,value).amount;
     }
 
     @Override
     public double depositBalance(long value) {
-        return this.economylib.depositPlayer(this.offlinePlayer,value).amount;
-    }
+        return EconomyManager.INSTANCE.getEconomylib().depositPlayer(this.offlinePlayer,value).amount;    }
 
     @Override
     public UUID getUniqueID() {
@@ -65,7 +66,7 @@ public class UserImpl extends EconomyManager implements User {
     }
 
     @Override
-    public Optional<Gang> getGang() {
+    public Optional<UUID> getGang() {
         return this.gang;
     }
 
@@ -77,21 +78,23 @@ public class UserImpl extends EconomyManager implements User {
     @Override
     public void setGang(Gang gang) {
         Preconditions.checkNotNull(gang,"Gang may not be null");
+        if (this.gang.isPresent()) {
+            this.presentGang.kickMember(this);
+            this.presentGang.msgC("gang","playerquit");
+        }
         if (gang == null) {
             this.rank = null;
             this.lastGang = null;
             this.chatEnabled = false;
+            this.presentGang = null;
             return;
         }
 
-        if (this.gang.isPresent()) {
-            this.gang.get().kickMember(this);
-            this.gang.get().msgC("gang","playerquit");
-        }
 
         this.rank = Rank.MEMBER;
         this.lastGang = gang.getUniqueID();
-        this.gang = Optional.of(gang);
+        this.gang = Optional.of(gang.getUniqueID());
+        this.presentGang = gang;
 
     }
 
@@ -100,14 +103,6 @@ public class UserImpl extends EconomyManager implements User {
         return this.lastGang;
     }
 
-    @Override
-    public void updateLastGang() {
-        if (!this.gang.isPresent()) {
-            lastGang = null;
-            return;
-        }
-        this.lastGang = this.gang.get().getUniqueID();
-    }
 
     @Override
     public boolean isChatEnabled() {
@@ -156,6 +151,11 @@ public class UserImpl extends EconomyManager implements User {
 
     }
 
+    @Override
+    public Gang getPresentGang() {
+        return this.presentGang;
+    }
+
 
     @NotNull
     @Override
@@ -163,7 +163,7 @@ public class UserImpl extends EconomyManager implements User {
         return JsonBuilder.object()
                 .add("uuid",this.uniqueID.toString())
                 .add("name",this.name)
-                .add("gang", this.gang.map(value -> value.getUniqueID().toString()).orElse(null))
+                .add("gang", this.gang.toString())
                 .add("rank",this.rank == null ? null : this.rank.name())
                 .build();
     }
@@ -186,6 +186,13 @@ public class UserImpl extends EconomyManager implements User {
     public void msgH(@NotNull String msg, @NotNull Object... replacements) {
         if (!this.offlinePlayer.isOnline()) return;
         final String message = MessagesHandler.INSTANCE.handleMessage(msg,replacements);
+        this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',message));
+    }
+
+    @Override
+    public void msgCH(@NotNull String[] path, @NotNull Object[] replacements) {
+        if (!this.offlinePlayer.isOnline()) return;
+        final String message = MessagesHandler.INSTANCE.handleMessage(Configuration.getLanguage().getNode((Object[]) path).getString(),replacements);
         this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',message));
     }
 }

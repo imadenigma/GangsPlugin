@@ -22,7 +22,7 @@ public class JavaTest extends TestCase {
         System.out.println(waw);
 
         Set<String > ok = gson.fromJson(waw,new TypeToken<Set<String>>(){}.getType());
-        System.out.println(ok);
+
 
     }
 

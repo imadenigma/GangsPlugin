@@ -19,12 +19,24 @@ public class GangImpl implements Gang {
     private long balance;
     private long minedBlocks;
     private User leader;
+
     public GangImpl(String name,User leader) {
         this.uniqueID = UUID.randomUUID();
         this.name = name;
         this.balance = 0L;
         this.minedBlocks = 0L;
         this.leader = leader;
+        GangManager.getGangs().add(this);
+    }
+
+    public GangImpl(final UUID uniqueID, final String name, final long balance, final long minedBlocks,final UUID leader,final Set<User> members) {
+        this.uniqueID = uniqueID;
+        this.name = name;
+        this.balance = balance;
+        this.minedBlocks = minedBlocks;
+        this.leader = User.getFromUUID(leader);
+        this.members = members;
+        GangManager.getGangs().add(this);
     }
 
 
@@ -85,7 +97,6 @@ public class GangImpl implements Gang {
     public void destroy() {
         this.getMembers().forEach(member -> {
             member.setGang(null);
-            member.updateLastGang();
             member.disableChat();
             member.msgC("messages","gang","destroy-msg");
         });
@@ -109,6 +120,7 @@ public class GangImpl implements Gang {
                 .add("name",this.name)
                 .add("balance",this.balance)
                 .add("minedBlocks",this.minedBlocks)
+                .add("leader",this.leader.getUniqueID().toString())
                 .add("members",array)
                 .build();
     }
@@ -132,6 +144,16 @@ public class GangImpl implements Gang {
     @Override
     public void msgH(@NotNull String msg, @NotNull Object... replacements) {
         final String message = MessagesHandler.INSTANCE.handleMessage(msg,replacements);
+        for (User user : this.members) {
+            user.msg(message);
+        }
+    }
+
+    @Override
+    public void msgCH(@NotNull String[] path, @NotNull Object[] replacements) {
+        String message = Configuration.getLanguage().getNode((Object[]) path).getString("default message");
+        message = MessagesHandler.INSTANCE.handleMessage(message,replacements);
+        if (message.equalsIgnoreCase("")) return;
         for (User user : this.members) {
             user.msg(message);
         }

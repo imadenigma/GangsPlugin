@@ -1,0 +1,13 @@
+gang:
+  join-msg: "a player has joined"
+  destroy-msg: "gang destroyed"
+  player-quit: "{0} exited the gang"
+  placeholder-msgs:
+    player-quit: "{0} exited the gang"
+
+
+
+user:
+  create:
+    failed: "&4You failed"
+    success: "&3You created a gang"

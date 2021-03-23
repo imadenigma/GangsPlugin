@@ -1,9 +1,11 @@
 package me.imadenigma.gangsplugin;
 
+import me.lucko.helper.Helper;
 import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.config.yaml.YAMLConfigurationLoader;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class Configuration {
 
@@ -11,8 +13,20 @@ public class Configuration {
     private static ConfigurationNode config;
 
     public Configuration() throws IOException {
-        final YAMLConfigurationLoader languageLoader = YAMLConfigurationLoader.builder().setFile(new File(GangsPlugin.getSingleton().getDataFolder(),"language.yml")).build();
-        final YAMLConfigurationLoader configLoader = YAMLConfigurationLoader.builder().setFile(new File(GangsPlugin.getSingleton().getDataFolder(),"config.yml")).build();
+        final File languageFile = new File(GangsPlugin.getSingleton().getDataFolder(),"language.yml");
+        final File configFile = new File(GangsPlugin.getSingleton().getDataFolder(),"config.yml");
+        if (!languageFile.exists()) {
+            languageFile.getParentFile().mkdirs();
+            languageFile.createNewFile();
+        }
+        if (!configFile.exists()) {
+            configFile.getParentFile().mkdirs();
+            configFile.createNewFile();
+
+        }
+
+        final YAMLConfigurationLoader languageLoader = YAMLConfigurationLoader.builder().setFile(languageFile).build();
+        final YAMLConfigurationLoader configLoader = YAMLConfigurationLoader.builder().setFile(configFile).build();
 
         if (languageLoader.canLoad()) language = languageLoader.load();
         if (configLoader.canLoad()) config = configLoader.load();
