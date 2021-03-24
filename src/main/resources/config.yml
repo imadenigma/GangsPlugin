@@ -1,0 +1,5 @@
+holo-location:
+  x: 100
+  y: 100
+  z: 100
+  world: "world"

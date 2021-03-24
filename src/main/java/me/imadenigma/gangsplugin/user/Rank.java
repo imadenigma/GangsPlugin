@@ -15,4 +15,6 @@ public enum Rank {
     public int getLevel() {
         return level;
     }
+
+
 }

@@ -1,5 +1,6 @@
 package me.imadenigma.gangsplugin;
 
+import me.imadenigma.gangsplugin.utils.Utils;
 import me.lucko.helper.Helper;
 import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.config.yaml.YAMLConfigurationLoader;
@@ -18,10 +19,12 @@ public class Configuration {
         if (!languageFile.exists()) {
             languageFile.getParentFile().mkdirs();
             languageFile.createNewFile();
+            Utils.INSTANCE.copyContent(Helper.hostPlugin().getBundledFile("language.yml"),languageFile);
         }
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
             configFile.createNewFile();
+            Utils.INSTANCE.copyContent(Helper.hostPlugin().getBundledFile("config.yml"),configFile);
 
         }
 

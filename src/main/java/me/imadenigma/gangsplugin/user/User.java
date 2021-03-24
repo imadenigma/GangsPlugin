@@ -55,6 +55,8 @@ public interface User extends GsonSerializable, Messenger, Economy {
 
     String getName();
 
+    void setPresentGang(final Gang gang);
+
     static User getFromBukkit(final Player player) {
         Preconditions.checkNotNull(player, "Player may not be null");
         final Optional<User> optional = UserManager.getUsers().stream().filter(user -> user.getUniqueID().equals(player.getUniqueId())).findAny();

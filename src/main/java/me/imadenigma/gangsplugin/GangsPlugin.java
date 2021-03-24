@@ -1,14 +1,19 @@
 package me.imadenigma.gangsplugin;
 
 import me.imadenigma.gangsplugin.commands.GangCommands;
+import me.imadenigma.gangsplugin.economy.Baltop;
 import me.imadenigma.gangsplugin.economy.EconomyManager;
 import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.listeners.PlayerListeners;
 import me.imadenigma.gangsplugin.user.UserManager;
+import me.lucko.helper.Helper;
+import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import me.lucko.helper.plugin.ap.Plugin;
 import me.lucko.helper.plugin.ap.PluginDependency;
 import me.mattstudios.mf.base.CommandManager;
+import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.io.IOException;
 
@@ -26,6 +31,7 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
 
     private UserManager userManager;
     private GangManager gangManager;
+    private Baltop balanceTop;
 
     @Override
     public void enable() {
@@ -38,18 +44,15 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         this.gangManager = new GangManager();
         try {
             this.gangManager.loadNames();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             new Configuration();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        new GangCommands();
         registerListener(new PlayerListeners());
         new EconomyManager();
-        new CommandManager(this).register(new GangCommands());
+        createHolo();
 
     }
 
@@ -63,12 +66,24 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.balanceTop.getHologram().despawn();
+        this.balanceTop.getHologram().closeSilently();
 
     }
 
 
     public static GangsPlugin getSingleton() {
         return singleton;
+    }
+
+
+    public void createHolo() {
+        final ConfigurationNode node = Configuration.getConfig().getNode("holo-location");
+        final int x = node.getNode("x").getInt(0);
+        final int y = node.getNode("y").getInt(0);
+        final int z = node.getNode("z").getInt(0);
+        final World world = Helper.worldNullable(node.getNode("world").getString("world"));
+        this.balanceTop = new Baltop(new Location(world,x,y,z));
     }
 
 

@@ -147,6 +147,7 @@ public class UserImpl implements User {
     @Override
     public void decreaseRank() {
         if (this.rank == Rank.OWNER) return;
+        if (this.rank == Rank.MEMBER) return;
         this.rank = Arrays.stream(Rank.values()).filter(rank -> rank.getLevel() == this.rank.getLevel() - 1).findAny().get();
 
     }
@@ -164,6 +165,11 @@ public class UserImpl implements User {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public void setPresentGang(Gang gang) {
+        this.presentGang = gang;
     }
 
 

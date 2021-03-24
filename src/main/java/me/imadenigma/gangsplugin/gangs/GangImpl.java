@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import me.imadenigma.gangsplugin.Configuration;
+import me.imadenigma.gangsplugin.user.Rank;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.utils.MessagesHandler;
 import me.lucko.helper.gson.JsonBuilder;
@@ -26,6 +27,7 @@ public class GangImpl implements Gang {
         this.balance = 0L;
         this.minedBlocks = 0L;
         this.leader = leader;
+        leader.setRank(Rank.OWNER);
         GangManager.getGangs().add(this);
     }
 
@@ -64,6 +66,8 @@ public class GangImpl implements Gang {
     @Override
     public void kickMember(final User user) {
         this.members.remove(user);
+        user.setGang(null);
+
     }
 
     @Override
