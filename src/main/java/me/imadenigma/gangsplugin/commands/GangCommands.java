@@ -1,11 +1,12 @@
 package me.imadenigma.gangsplugin.commands;
 
+import me.imadenigma.gangsplugin.Configuration;
 import me.imadenigma.gangsplugin.GangsPlugin;
 import me.imadenigma.gangsplugin.economy.Baltop;
 import me.imadenigma.gangsplugin.gangs.Gang;
 import me.imadenigma.gangsplugin.gangs.GangImpl;
+import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.user.Invite;
-import me.imadenigma.gangsplugin.user.Rank;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.user.UserManager;
 import me.lucko.helper.Commands;
@@ -14,7 +15,11 @@ import me.mattstudios.mf.base.CommandBase;
 import me.mattstudios.mf.base.CommandManager;
 import me.mattstudios.mf.base.components.TypeResult;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Command("gang")
@@ -32,12 +37,14 @@ public class GangCommands extends CommandBase {
                         })
                 .register("accept");
         final CommandManager manager = new CommandManager(GangsPlugin.getSingleton());
-        manager.getCompletionHandler()
+        manager
+                .getCompletionHandler()
                 .register(
                         "#gang-players",
                         input ->
                                 UserManager.getUsers().stream().map(User::getName).collect(Collectors.toList()));
-        manager.getParameterHandler()
+        manager
+                .getParameterHandler()
                 .register(
                         User.class,
                         argument -> {
@@ -53,13 +60,17 @@ public class GangCommands extends CommandBase {
     @WrongUsage("&c/gang &3create &c<name>")
     public void create(final Player player, final String name) {
         final User user = User.getFromBukkit(player);
-        if (user.hasGang()) {
-            user.msgC("user", "create", "failed");
+        if (user.hasGang()
+                || Arrays.stream(GangManager.build().getGangsFolder().listFiles())
+                .anyMatch(
+                        file -> file.getName().equalsIgnoreCase(name) || file.getName().contains(name))) {
+            user.msg(getFailMessage("create"));
             return;
         }
         final Gang gang = new GangImpl(name, user);
         gang.addMember(user);
         user.setGang(gang);
+        user.msg(getSuccessMessage("create"));
     }
 
     @SubCommand("invite")
@@ -67,10 +78,17 @@ public class GangCommands extends CommandBase {
     @WrongUsage("&c/gang &3invite &c<player>")
     @Completion("#players")
     public void invite(final Player player, final User target) {
-        if (Invite.Companion.getAvailable().containsKey(target)) return;
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) return;
+        if (Invite.Companion.getAvailable().containsKey(target)) {
+            user.msgC("user","invite","wait");
+            return;
+        }
+        if (!user.hasGang()) {
+            user.msgC("user","invite","has-no-gang");
+            return;
+        }
         new Invite(user, target);
+        user.msgH(getSuccessMessage("invite"),target.getName());
     }
 
     @SubCommand("kick")
@@ -79,12 +97,20 @@ public class GangCommands extends CommandBase {
     @Completion("#gang-players")
     public void kick(final Player player, final User target) {
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) return;
-        if (!target.hasGang()) return;
-        if (!user.getGang().get().equals(target.getGang().get())) return;
-        if (target.getRank().getLevel() >= user.getRank().getLevel()) return;
-
-        user.getPresentGang().kickMember(target);
+        if (!user.hasGang()) {
+            user.msgC("user", "kick", "user-notGangMember");
+            return;
+        }
+        if (!target.hasGang()) {
+            user.msgC("user", "kick", "target-notGangMember");
+            return;
+        }
+        if (!user.getGang().get().equals(target.getGang().get())) {
+            user.msgC("user", "kick", "not-sameGang");
+            return;
+        }
+        user.msgH(getSuccessMessage("kick"),target.getName());
+        user.getGang().ifPresent(gang -> gang.kickMember(user));
     }
 
     @SubCommand("demote")
@@ -93,12 +119,15 @@ public class GangCommands extends CommandBase {
     @Completion("#gang-players")
     public void demote(final Player player, final User target) {
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) return;
-        if (!target.hasGang()) return;
-        if (!user.getGang().get().equals(target.getGang().get())) return;
-        if (target.getRank().getLevel() > user.getRank().getLevel()) return;
 
-        target.decreaseRank();
+        if (!user.hasGang()) user.msgC("user", "demote", "user-has-no-gang");
+        else if (!target.hasGang()) user.msgC("user", "demote", "target-user-notsame-gang");
+        else if (!user.getGang().get().equals(target.getGang().get())) user.msgC("user", "demote", "target-user-notsame-gang");
+        else if (target.getRank().getLevel() > user.getRank().getLevel()) user.msgC("user", "demote", "no-permission");
+    else {
+      target.decreaseRank();
+      user.msgH(getSuccessMessage("demote"),target.getName());
+            }
     }
 
     @SubCommand("promote")
@@ -107,36 +136,46 @@ public class GangCommands extends CommandBase {
     @Completion("#gang-players")
     public void promote(final Player player, final User target) {
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) return;
-        if (!target.hasGang()) return;
-        if (!user.getGang().get().equals(target.getGang().get())) return;
-        if (target.getRank().getLevel() > user.getRank().getLevel()) return;
-
-        target.increaseRank();
+        if (!user.hasGang()) user.msgC("user","promote","user-has-no-gang");
+        else if (!target.hasGang()) user.msgC("user","promote","target-user-notsame-gang");
+        else if (!user.getGang().get().equals(target.getGang().get())) user.msgC("user","promote","target-user-notsame-gang");
+        else if (target.getRank().getLevel() > user.getRank().getLevel()) user.msgC("user","promote","no-permission");
+        else
+            target.increaseRank();
     }
 
     @SubCommand("deposit")
     @Permission("gang.deposit")
     @WrongUsage("&c/gang &3deposit <amount>")
-    @Completion("#range:1-99999")
+    @Completion("#range:1-1000")
     public void deposit(final Player player, final Integer amount) {
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) return;
-        if (user.getBalance() < amount) return;
-        user.withdrawBalance(amount);
-        user.getPresentGang().depositBalance(amount);
+        if (!user.hasGang()) {
+            user.msgC("user", "deposit", "no-gang");
+        } else if (user.getGang().get().getBalance() < amount) {
+            user.msgC("user","deposit","not-enough-balance");
+        } else {
+            user.getGang().get().depositBalance(amount);
+            user.withdrawBalance(amount);
+            user.msgH(getSuccessMessage("deposit"),user.getBalance());
+        }
     }
 
     @SubCommand("withdraw")
     @Permission("gang.withdraw")
     @WrongUsage("&c/gang &3withdraw <amount>")
-    @Completion("#range:1-99999")
+    @Completion("#range:1-1000")
     public void withdraw(final Player player, final Integer amount) {
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) return;
-        if (user.getPresentGang().getBalance() < amount) return;
-        user.getPresentGang().withdrawBalance(amount);
-        user.depositBalance(amount);
+        if (!user.hasGang()) {
+            user.msgC("user", "withdraw", "no-gang");
+        } else if (user.getGang().get().getBalance() < amount) {
+            user.msgC("user","withdraw","not-enough-balance");
+        } else {
+            user.getGang().get().withdrawBalance(amount);
+            user.depositBalance(amount);
+            user.msgH(getSuccessMessage("withdraw"),user.getBalance());
+        }
     }
 
     @SubCommand("top")
@@ -145,6 +184,8 @@ public class GangCommands extends CommandBase {
     @Alias({"top", "leaderboard"})
     public void top(final Player player) {
         player.teleport(Baltop.INSTANCE.getLocation());
+        player.sendMessage(
+                ChatColor.translateAlternateColorCodes('&', getSuccessMessage("leaderboard")));
     }
 
     @SubCommand("balance")
@@ -152,8 +193,10 @@ public class GangCommands extends CommandBase {
     @WrongUsage("&c/gang &3balance")
     public void balance(final Player player) {
         final User user = User.getFromBukkit(player);
-        if (user.hasGang())
-            user.msgCH(new String[] {""}, new Object[] {user.getPresentGang().getBalance()});
+        if (user.hasGang()) {
+            user.msgH(getSuccessMessage("balance"), user.getGang().get().getBalance());
+        } else user.msg(getFailMessage("balance"));
+
     }
 
     @SubCommand("rank")
@@ -161,27 +204,69 @@ public class GangCommands extends CommandBase {
     @WrongUsage("&c/gang &3rank")
     public void rank(final Player player) {
         final User user = User.getFromBukkit(player);
-        if (user.hasGang()) user.msgCH(new String[]{"user","rank"},new Object[]{user.getRank()});
+        if (user.hasGang()) {
+            user.msgH(getSuccessMessage("rank"), user.getRank());
+        } else user.msg(getFailMessage("rank"));
     }
 
     @SubCommand("chat")
     @Permission("gang.chat")
     @WrongUsage("&c/gang &3chat <on/off>")
-    @Completion("#enum")
-    public void chat(final Player player,final Toggle toggle) {
+    public void chat(final Player player, final String toggle) {
         final User user = User.getFromBukkit(player);
-        if (toggle.b) user.enableChat();
-        else user.disableChat();
+        if (toggle.equalsIgnoreCase("on")) user.enableChat();
+        else if (toggle.equalsIgnoreCase("off")) user.disableChat();
+
     }
 
-
-
-    enum Toggle {
-        on(true),off(false);
-        private final boolean b;
-        Toggle(boolean b) {
-            this.b = b;
+    @SubCommand("rename")
+    @Permission("gang.rename")
+    @WrongUsage("&c/gang &3rename <new name>")
+    public void rename(final Player player, final String newName) {
+        final User user = User.getFromBukkit(player);
+        if (!user.hasGang()) {
+            user.msg(getFailMessage("rename"));
+            return;
         }
+        if (Arrays.stream(GangManager.build().getGangsFolder().listFiles())
+                .anyMatch(
+                        file -> file.getName().equalsIgnoreCase(newName) || file.getName().contains(newName))) {
+            user.msg(getFailMessage("rename"));
+            return;
+        }
+        user.msgH(getSuccessMessage("rename"), newName);
+        Arrays.stream(GangManager.build().getGangsFolder().listFiles())
+                .filter(file -> file.getName().equalsIgnoreCase(user.getLastKnownGang()))
+                .findAny()
+                .get()
+                .renameTo(new File(GangManager.build().getGangsFolder(), newName + ".json"));
+        user.getGang().get().setName(newName);
+    }
 
+    @SubCommand("name")
+    @Permission("gang.name")
+    @WrongUsage("&c/gang &3name")
+    public void name(final Player player) {
+        final User user = User.getFromBukkit(player);
+        if (!user.hasGang()) {
+            user.msg(getFailMessage("name"));
+            return;
+        }
+        user.msgH(getSuccessMessage("name"), user.getGang().get().getName());
+    }
+
+    // Command Utils
+
+    @CompleteFor("chat")
+    public List<String> commandCompletion(final List<String> completionArg, final Player player) {
+        return Arrays.asList("on", "off");
+    }
+
+    private static String getFailMessage(final String command) {
+        return Configuration.getLanguage().getNode("user", command, "failed").getString("null");
+    }
+
+    private static String getSuccessMessage(final String command) {
+        return Configuration.getLanguage().getNode("user", command, "success").getString("null");
     }
 }

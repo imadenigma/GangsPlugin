@@ -24,16 +24,13 @@ public interface User extends GsonSerializable, Messenger, Economy {
 
     OfflinePlayer getOfflinePlayer();
 
-    Optional<UUID> getGang();
+    Optional<Gang> getGang();
 
     default boolean hasGang() {
-        return this.getGang().isPresent() && this.getPresentGang() != null;
+        return this.getLastKnownGang() != null;
     }
 
     void setGang(Gang gang);
-
-    UUID getLastGang();
-
 
     boolean isChatEnabled();
 
@@ -43,36 +40,36 @@ public interface User extends GsonSerializable, Messenger, Economy {
 
     void invite(User user);
 
-    void setRank(Rank rank);
-
-    void increaseRank();
-
-    void decreaseRank();
-
-    Rank getRank();
-
-    Gang getPresentGang();
+    String getLastKnownGang();
 
     String getName();
 
     void setPresentGang(final Gang gang);
+
+    Rank getRank();
 
     static User getFromBukkit(final Player player) {
         Preconditions.checkNotNull(player, "Player may not be null");
         final Optional<User> optional = UserManager.getUsers().stream().filter(user -> user.getUniqueID().equals(player.getUniqueId())).findAny();
         return optional.orElseGet(() -> new UserImpl(player.getDisplayName(), null, Players.getOffline(player.getUniqueId()).get()));
     }
+
     static User getFromUUID(final UUID uniqueID) {
         Preconditions.checkNotNull(uniqueID);
         final Optional<User> optional = UserManager.getUsers().stream().filter(user -> user.getUniqueID().equals(uniqueID)).findAny();
         return optional.orElseThrow(Suppliers.ofInstance(new UserNotFoundException()));
     }
+
     static User deserialize(final JsonElement element) {
         final JsonObject object = element.getAsJsonObject();
         final String name = object.get("name").getAsString();
         final UUID uuid = UUID.fromString(object.get("uuid").getAsString());
         final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-        return new UserImpl(name,null,offlinePlayer);
+        final String gang = object.get("gang").getAsString();
+        return new UserImpl(name,gang,offlinePlayer);
     }
 
+    void decreaseRank();
+
+    void increaseRank();
 }

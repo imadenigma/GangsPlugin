@@ -1,5 +1,7 @@
 package me.imadenigma.gangsplugin.user;
 
+import java.util.List;
+
 public enum Rank {
 
     MEMBER(1),
@@ -16,5 +18,5 @@ public enum Rank {
         return level;
     }
 
-
 }
+

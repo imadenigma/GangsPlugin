@@ -5,7 +5,6 @@ import me.lucko.helper.Schedulers
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import java.util.concurrent.TimeUnit
 
 
@@ -25,7 +24,7 @@ class Invite(private val sender: User, private val receiver: User) {
 
     init {
         sendInvite()
-        available[receiver] = sender.presentGang
+        available[receiver] = sender.gang.get()
         Schedulers.sync()
             .runLater({
                       this.destroy()
@@ -37,9 +36,10 @@ class Invite(private val sender: User, private val receiver: User) {
     }
 
     private fun sendInvite() {
-        this.receiver.msg("${sender.name} has invited you to join the gang &6\"${sender.presentGang.name}\"")
+        this.receiver.msg("${sender.name} has invited you to join the gang &6\"${sender.lastKnownGang}\"")
         val text = TextComponent("Click here to accept or skip it to decline")
         text.color = net.md_5.bungee.api.ChatColor.AQUA
+        text.isBold = true
         text.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND,"/accept")
 
         Bukkit.getPlayer(this.receiver.uniqueID)?.spigot()?.sendMessage(text)

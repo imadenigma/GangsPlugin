@@ -36,7 +36,6 @@ public class UserManager {
 
     public void saveUsers() {
         long ms = System.currentTimeMillis();
-        System.out.println(users);
         JsonArray array = new JsonArray();
         for (User user : users) {
             array.add(user.serialize());

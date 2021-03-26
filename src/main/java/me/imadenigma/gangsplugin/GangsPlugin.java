@@ -43,7 +43,6 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         //Create gangManager's instance
         this.gangManager = new GangManager();
         try {
-            this.gangManager.loadNames();
             new Configuration();
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,11 +60,6 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         // Plugin shutdown logic
         this.userManager.saveUsers();
         this.gangManager.saveGangs();
-        try {
-            this.gangManager.saveNames();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         this.balanceTop.getHologram().despawn();
         this.balanceTop.getHologram().closeSilently();
 

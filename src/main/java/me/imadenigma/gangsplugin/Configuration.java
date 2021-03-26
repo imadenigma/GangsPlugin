@@ -4,7 +4,11 @@ import me.imadenigma.gangsplugin.utils.Utils;
 import me.lucko.helper.Helper;
 import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.config.yaml.YAMLConfigurationLoader;
+
+import javax.rmi.CORBA.Util;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -19,14 +23,16 @@ public class Configuration {
         if (!languageFile.exists()) {
             languageFile.getParentFile().mkdirs();
             languageFile.createNewFile();
-            Utils.INSTANCE.copyContent(Helper.hostPlugin().getBundledFile("language.yml"),languageFile);
         }
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
             configFile.createNewFile();
-            Utils.INSTANCE.copyContent(Helper.hostPlugin().getBundledFile("config.yml"),configFile);
-
         }
+        if (configFile.getUsableSpace() == 0) Utils.INSTANCE.copyContent(Helper.hostPlugin().getBundledFile("config.yml"),configFile);
+        if (languageFile.length() == 0) Utils.INSTANCE.copyContent(Helper.hostPlugin().getBundledFile("language.yml"),languageFile);
+    System.out.println(languageFile.length() + "&&");
+        System.out.println(Helper.hostPlugin().getBundledFile("language.yml").getUsableSpace());
+
 
         final YAMLConfigurationLoader languageLoader = YAMLConfigurationLoader.builder().setFile(languageFile).build();
         final YAMLConfigurationLoader configLoader = YAMLConfigurationLoader.builder().setFile(configFile).build();

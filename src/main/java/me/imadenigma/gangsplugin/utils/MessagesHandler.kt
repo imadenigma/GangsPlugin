@@ -7,7 +7,7 @@ object MessagesHandler {
     fun handleMessage(msg: String,vararg replacements: Any): String {
         if (replacements.isEmpty()) return msg
         val tore = StringUtils.substringBetween(msg, "{", "}")
-        if (tore.isEmpty()) return msg
+        if (tore?.isEmpty() == true) return msg
 
         var toHandle = msg
         for (toRep in tore) {

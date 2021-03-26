@@ -13,3 +13,39 @@ user:
     success: "&3You created a gang"
   balance: "&3The balance is {0}"
   rank: "&3your rank is {0}"
+  invite:
+    success: "You invited {0} to your clan successfully"
+    has-no-gang: "You have not the permission to execute this command"
+    wait: "You should wait a moment"
+  kick:
+    user-notGangMember: "You should belong to a gang"
+    target-notGangMember: "target don't belong to your gang"
+    not-sameGang: "target don't belong to your gang"
+    success: "You kicked {0} successfully!"
+  demote:
+    user-has-no-gang: "You should belong to a gang to perform this command"
+    target-user-notsame-gang: "You and the target are not in the same gang"
+    no-permission: "You have not the permission to execute this command"
+    success: "You demote {0} successfully"
+  promote:
+    user-has-no-gang: "You should belong to a gang to perform this command"
+    target-user-notsame-gang: "You and the target are not in the same gang"
+    no-permission: "You have not the permission to execute this command"
+    success: "You promote {0} successfully"
+  deposit:
+    no-gang: "You don't belong to any gang"
+    not-enough-balance: "You don't have money enough"
+    success: "You're balance now is {0}"
+  name:
+    failed: "You have no gang"
+    success: "Your gang's name is {0}"
+  rename:
+    failed: "You can;t"
+    success: "your gang name now is {0}"
+  leaderboard:
+    success: "You are teleported now"
+  withdraw:
+    no-gang: "You have no gang"
+    not-enough-balance: "not enough balance"
+    success: "your balance now is {0}"
+
