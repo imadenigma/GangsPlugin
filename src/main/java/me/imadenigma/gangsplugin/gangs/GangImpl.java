@@ -71,6 +71,7 @@ public class GangImpl implements Gang {
     public void addMember(final User user) {
         if (this.members.size() >= Configuration.getConfig().getNode("gangs", "max-members").getInt(10))
             return;
+        if (this.members.containsKey(user)) return;
         this.members.put(user, Rank.MEMBER);
     }
 
@@ -111,6 +112,11 @@ public class GangImpl implements Gang {
     }
 
     @Override
+    public User getLeader() {
+        return this.leader;
+    }
+
+    @Override
     public void increaseRank(User user) {
         if (this.members.get(user) != null && user.getRank() != Rank.CoLeader) {
             this.members.replace(user, Arrays.stream(Rank.values()).filter(a -> a.getLevel() == this.members.get(user).getLevel() + 1).findAny().get());
@@ -122,6 +128,11 @@ public class GangImpl implements Gang {
         if (this.members.get(user) != null && user.getRank() != Rank.CoLeader && user.getRank() != Rank.MEMBER) {
             this.members.replace(user, Arrays.stream(Rank.values()).filter(a -> a.getLevel() == this.members.get(user).getLevel() - 1).findAny().get());
         }
+    }
+
+    @Override
+    public void increaseMinedBlocks() {
+        this.minedBlocks += 1;
     }
 
     @Override

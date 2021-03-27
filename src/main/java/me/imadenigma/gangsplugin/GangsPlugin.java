@@ -15,6 +15,7 @@ import me.mattstudios.mf.base.CommandManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
@@ -37,16 +38,26 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
     public void enable() {
         // Plugin startup logic
         singleton = this;
+
+
+
+        //Create gangManager's instance
+        try {
+            this.gangManager = new GangManager(true);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         //Loading users
         this.userManager = new UserManager();
         this.userManager.loadUsers();
-        //Create gangManager's instance
-        this.gangManager = new GangManager();
         try {
+
             new Configuration();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
 
         new GangCommands();
         registerListener(new PlayerListeners());

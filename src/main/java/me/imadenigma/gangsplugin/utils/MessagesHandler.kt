@@ -5,7 +5,7 @@ import org.apache.commons.lang.StringUtils
 object MessagesHandler {
 
     fun handleMessage(msg: String,vararg replacements: Any): String {
-        if (replacements.isEmpty()) return msg
+        if (msg == null) return ""
         val tore = StringUtils.substringBetween(msg, "{", "}")
         if (tore?.isEmpty() == true) return msg
 

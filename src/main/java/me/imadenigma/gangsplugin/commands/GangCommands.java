@@ -9,10 +9,12 @@ import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.user.Invite;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.user.UserManager;
+import me.imadenigma.gangsplugin.utils.MessagesHandler;
 import me.lucko.helper.Commands;
 import me.mattstudios.mf.annotations.*;
 import me.mattstudios.mf.base.CommandBase;
 import me.mattstudios.mf.base.CommandManager;
+import me.mattstudios.mf.base.MessageHandler;
 import me.mattstudios.mf.base.components.TypeResult;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -155,6 +157,7 @@ public class GangCommands extends CommandBase {
         } else if (user.getGang().get().getBalance() < amount) {
             user.msgC("user","deposit","not-enough-balance");
         } else {
+            user.msg("your balance:" + user.getBalance());
             user.getGang().get().depositBalance(amount);
             user.withdrawBalance(amount);
             user.msgH(getSuccessMessage("deposit"),user.getBalance());
@@ -205,7 +208,7 @@ public class GangCommands extends CommandBase {
     public void rank(final Player player) {
         final User user = User.getFromBukkit(player);
         if (user.hasGang()) {
-            user.msgH(getSuccessMessage("rank"), user.getRank());
+      user.msg(MessagesHandler.INSTANCE.handleMessage(getSuccessMessage("rank"), user.getRank().name()));
         } else user.msg(getFailMessage("rank"));
     }
 
@@ -253,6 +256,7 @@ public class GangCommands extends CommandBase {
             return;
         }
         user.msgH(getSuccessMessage("name"), user.getGang().get().getName());
+    System.out.println(user.getLastKnownGang());
     }
 
     // Command Utils
@@ -267,6 +271,6 @@ public class GangCommands extends CommandBase {
     }
 
     private static String getSuccessMessage(final String command) {
-        return Configuration.getLanguage().getNode("user", command, "success").getString("null");
+        return Configuration.getLanguage().getNode("user", command, "success").getString("abc");
     }
 }

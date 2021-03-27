@@ -17,7 +17,7 @@ public class GangManager {
     private static final Map<String, Long> gangsBalance = Maps.newHashMap();
     private final File gangsFolder;
 
-    public GangManager() {
+    public GangManager(final boolean force) throws FileNotFoundException {
         this.gangsFolder = new File(GangsPlugin.getSingleton().getDataFolder() + "/gangs");
         instance = this;
         try {
@@ -25,6 +25,13 @@ public class GangManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        for (File file : this.gangsFolder.listFiles()) {
+            loadGang(file.getName().replace(".json",""));
+        }
+    }
+
+    public GangManager() {
+        this.gangsFolder = new File(GangsPlugin.getSingleton().getDataFolder() + "/gangs");
     }
 
 
@@ -34,9 +41,15 @@ public class GangManager {
                 .noneMatch(file -> file.getName().equalsIgnoreCase(name))) return null;
         try {
             Gang gang = Gang.deserialize(
-                            GsonProvider.parser()
-                                    .parse(new FileReader(new File(gangsFolder, name + ".json"))));
-            gang.getMembers().forEach(member -> member.setPresentGang(gang));
+                    GsonProvider.parser()
+                            .parse(new FileReader(new File(gangsFolder, name + ".json"))));
+      gang.getMembers()
+          .forEach(
+              member -> {
+                  member.forceGang(gang);
+                  System.out.println(member);
+              });
+            gang.getLeader().setGang(gang);
             return gang;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -74,7 +87,7 @@ public class GangManager {
     }
 
     public static GangManager build() {
-        return instance;
+        return new GangManager();
     }
 
     public File getGangsFolder() {

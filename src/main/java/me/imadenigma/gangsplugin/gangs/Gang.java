@@ -39,9 +39,13 @@ public interface Gang extends GsonSerializable, Messenger {
 
     void destroy();
 
+    User getLeader();
+
     void increaseRank(final User user);
 
     void decreaseRank(final User user);
+
+    void increaseMinedBlocks();
 
     static Gang deserialize(final JsonElement jsonElement) {
         JsonObject object = jsonElement.getAsJsonObject();
@@ -67,8 +71,12 @@ public interface Gang extends GsonSerializable, Messenger {
                     .findAny()
                     .get();
         }
+        System.out.println(name);
         Gang gang = GangManager.build().loadGang(name);
-        if (gang == null) throw new GangNotFoundException(name);
+        if (gang == null) {
+            gang = new GangManager().loadGang(name);
+            if (gang == null) throw new GangNotFoundException(name);
+        }
         return gang;
     }
 

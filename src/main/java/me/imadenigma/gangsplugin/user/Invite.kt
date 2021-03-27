@@ -19,6 +19,7 @@ class Invite(private val sender: User, private val receiver: User) {
         @JvmStatic
         fun acceptInv(user: User, gang: Gang) {
             user.setGang(gang)
+            gang.addMember(user)
         }
     }
 

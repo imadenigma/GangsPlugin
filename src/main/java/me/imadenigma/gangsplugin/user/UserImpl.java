@@ -1,6 +1,5 @@
 package me.imadenigma.gangsplugin.user;
 
-import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import me.imadenigma.gangsplugin.Configuration;
 import me.imadenigma.gangsplugin.economy.EconomyManager;
@@ -22,15 +21,16 @@ public class UserImpl implements User {
     private boolean chatEnabled;
     private Gang presentGang;
 
-    public UserImpl(final String name, final String gangname, final OfflinePlayer offlinePlayer) {
+    public UserImpl(final String gangname, final OfflinePlayer offlinePlayer) {
         this.uniqueID = offlinePlayer.getUniqueId();
-        this.name = name;
+        this.name = offlinePlayer.getName();
         this.offlinePlayer = offlinePlayer;
-        UserManager.getUsers().add(this);
         this.presentGang = null;
         this.lastKnownGang = gangname;
-        if (gangname != null) this.presentGang = Gang.getByName(gangname);
+        UserManager.getUsers().add(this);
     }
+
+
 
 
     @Override
@@ -70,10 +70,11 @@ public class UserImpl implements User {
     @Override
     public void setGang(final Gang gang) {
         if (this.getGang().isPresent()) {
-            this.presentGang.kickMember(this);
-            this.presentGang.msgC("gang","playerquit");
-            this.lastKnownGang = null;
-            return;
+            Gang gang1 = this.presentGang;
+            gang1.kickMember(this);
+            gang1.msgC("gang","playerquit");
+            this.presentGang = gang;
+            this.lastKnownGang = gang == null ? null : gang.getName();
         }
         if (gang == null) {
             this.chatEnabled = false;
@@ -85,6 +86,12 @@ public class UserImpl implements User {
         this.lastKnownGang = gang.getName();
         this.presentGang = gang;
 
+    }
+
+    @Override
+    public void forceGang(Gang gang) {
+        this.lastKnownGang = gang.getName();
+        this.presentGang = gang;
     }
 
 
@@ -128,13 +135,11 @@ public class UserImpl implements User {
         return this.name;
     }
 
-    @Override
-    public void setPresentGang(Gang gang) {
-        this.presentGang = gang;
-    }
+
 
     @Override
-    public Rank getRank() {
+    public Rank
+    getRank() {
         if (this.presentGang == null) return null;
         return this.presentGang.getRank(this);
     }
