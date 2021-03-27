@@ -7,9 +7,14 @@ import me.imadenigma.gangsplugin.Configuration;
 import me.imadenigma.gangsplugin.user.Rank;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.utils.MessagesHandler;
+import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.gson.JsonBuilder;
+import me.lucko.helper.terminable.Terminable;
+import me.lucko.helper.terminable.TerminableConsumer;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -24,11 +29,13 @@ public class GangImpl implements Gang {
     private final Map<User, Rank> members = Maps.newHashMap();
 
     public GangImpl(String name, User leader) {
-        this.name = name;
-        this.balance = 0L;
-        this.minedBlocks = 0L;
-        this.leader = leader;
-        GangManager.getGangs().add(this);
+        this(
+                name,
+                0L,
+                0L,
+                leader.getUniqueID(),
+                Maps.newHashMap()
+        );
     }
 
     public GangImpl(
@@ -44,6 +51,7 @@ public class GangImpl implements Gang {
         this.members.clear();
         this.members.putAll(members);
         GangManager.getGangs().add(this);
+
     }
 
     @Override
@@ -63,6 +71,8 @@ public class GangImpl implements Gang {
 
     @Override
     public void kickMember(final User user) {
+        if (this.members.get(user) == null) return;
+        if (this.members.get(user) == Rank.OWNER) return;
         this.members.remove(user);
         user.setGang(null);
     }
@@ -108,6 +118,7 @@ public class GangImpl implements Gang {
         this.minedBlocks = 0L;
         this.name = null;
         this.balance = 0L;
+        new File(GangManager.build().getGangsFolder(), this.name + ".json").delete();
         GangManager.getGangs().remove(this);
     }
 
@@ -168,9 +179,11 @@ public class GangImpl implements Gang {
 
     @Override
     public void msgC(String... path) {
-        final String message =
-                Configuration.getLanguage().getNode((Object[]) path).getString("default message");
-        if (message.equalsIgnoreCase("")) return;
+        ConfigurationNode node = Configuration.getLanguage().getNode();
+        for (String string : path) {
+            node = node.getNode(string);
+        }
+        final String message = node.getString(Arrays.toString(path) + " Path not found");
         for (User user : this.members.keySet()) {
             user.msg(message);
         }
@@ -178,7 +191,7 @@ public class GangImpl implements Gang {
 
     @Override
     public void msgH(@NotNull String msg, @NotNull Object... replacements) {
-        final String message = MessagesHandler.INSTANCE.handleMessage(msg, replacements);
+        final String message = MessagesHandler.INSTANCE.handle(msg, replacements);
         for (User user : this.members.keySet()) {
             user.msg(message);
         }

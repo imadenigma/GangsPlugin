@@ -1,6 +1,6 @@
 package me.imadenigma.gangsplugin.listeners
 
-import me.imadenigma.gangsplugin.gangs.GangManager
+import me.imadenigma.gangsplugin.gangs.Gang
 import me.imadenigma.gangsplugin.user.User
 import me.lucko.helper.utils.Log
 import org.bukkit.event.EventHandler
@@ -15,8 +15,9 @@ class PlayerListeners : Listener {
         val user = User.getFromBukkit(e.player)
         if (user.hasGang()) {
             if (user.gang.isPresent) return
-            val gang = GangManager.build().loadGang(user.lastKnownGang)
-            gang.members.forEach { member -> member.setGang(gang) }
+            if (user.lastKnownGang == null) return
+            val gang = Gang.getByName(user.lastKnownGang)
+            user.msg("&7your gang is loaded !")
             Log.info("the first member of the gang joined ! The gang is loaded , name: ${user.lastKnownGang}")
         }
     }
@@ -25,7 +26,7 @@ class PlayerListeners : Listener {
     fun  onBlockBreak(e: BlockBreakEvent) {
         val user = User.getFromBukkit(e.player)
         if (user.hasGang()) {
-            user.gang.get().increaseMinedBlocks();
+            user.gang.get().increaseMinedBlocks()
         }
     }
 

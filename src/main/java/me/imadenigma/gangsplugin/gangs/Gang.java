@@ -1,7 +1,6 @@
 package me.imadenigma.gangsplugin.gangs;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,9 +9,6 @@ import me.imadenigma.gangsplugin.user.Rank;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.utils.Messenger;
 import me.lucko.helper.gson.GsonSerializable;
-
-import java.io.File;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;

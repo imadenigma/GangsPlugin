@@ -28,10 +28,9 @@ public class UserImpl implements User {
         this.presentGang = null;
         this.lastKnownGang = gangname;
         UserManager.getUsers().add(this);
+        if (EconomyManager.INSTANCE.getEconomylib().hasAccount(this.offlinePlayer))
+            EconomyManager.INSTANCE.getEconomylib().createPlayerAccount(this.offlinePlayer);
     }
-
-
-
 
     @Override
     public double getBalance() {
@@ -64,17 +63,14 @@ public class UserImpl implements User {
 
     @Override
     public boolean hasGang() {
-        return this.getGang().isPresent();
+        return this.lastKnownGang != null;
     }
 
     @Override
     public void setGang(final Gang gang) {
         if (this.getGang().isPresent()) {
-            Gang gang1 = this.presentGang;
-            gang1.kickMember(this);
-            gang1.msgC("gang","playerquit");
-            this.presentGang = gang;
-            this.lastKnownGang = gang == null ? null : gang.getName();
+            this.presentGang.kickMember(this);
+            this.presentGang.msgC("gang","playerquit");
         }
         if (gang == null) {
             this.chatEnabled = false;
@@ -184,7 +180,7 @@ public class UserImpl implements User {
     @Override
     public void msgH(@NotNull String msg, @NotNull Object... replacements) {
         if (!this.offlinePlayer.isOnline()) return;
-        final String message = MessagesHandler.INSTANCE.handleMessage(msg,replacements);
+        final String message = MessagesHandler.INSTANCE.handle(msg,replacements);
         this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',message));
     }
 

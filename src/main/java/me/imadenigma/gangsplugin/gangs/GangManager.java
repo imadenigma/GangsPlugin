@@ -25,9 +25,6 @@ public class GangManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (File file : this.gangsFolder.listFiles()) {
-            loadGang(file.getName().replace(".json",""));
-        }
     }
 
     public GangManager() {
@@ -37,8 +34,6 @@ public class GangManager {
 
 
     public Gang loadGang(final String name) {
-        if (Arrays.stream(gangsFolder.listFiles())
-                .noneMatch(file -> file.getName().equalsIgnoreCase(name))) return null;
         try {
             Gang gang = Gang.deserialize(
                     GsonProvider.parser()
@@ -49,7 +44,6 @@ public class GangManager {
                   member.forceGang(gang);
                   System.out.println(member);
               });
-            gang.getLeader().setGang(gang);
             return gang;
         } catch (FileNotFoundException e) {
             e.printStackTrace();

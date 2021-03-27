@@ -7,6 +7,7 @@ import me.imadenigma.gangsplugin.gangs.Gang;
 import me.imadenigma.gangsplugin.gangs.GangImpl;
 import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.user.Invite;
+import me.imadenigma.gangsplugin.user.Rank;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.user.UserManager;
 import me.imadenigma.gangsplugin.utils.MessagesHandler;
@@ -14,7 +15,6 @@ import me.lucko.helper.Commands;
 import me.mattstudios.mf.annotations.*;
 import me.mattstudios.mf.base.CommandBase;
 import me.mattstudios.mf.base.CommandManager;
-import me.mattstudios.mf.base.MessageHandler;
 import me.mattstudios.mf.base.components.TypeResult;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -208,7 +208,7 @@ public class GangCommands extends CommandBase {
     public void rank(final Player player) {
         final User user = User.getFromBukkit(player);
         if (user.hasGang()) {
-      user.msg(MessagesHandler.INSTANCE.handleMessage(getSuccessMessage("rank"), user.getRank().name()));
+          user.msg(MessagesHandler.INSTANCE.handle(getSuccessMessage("rank"), user.getRank().name()));
         } else user.msg(getFailMessage("rank"));
     }
 
@@ -256,14 +256,40 @@ public class GangCommands extends CommandBase {
             return;
         }
         user.msgH(getSuccessMessage("name"), user.getGang().get().getName());
-    System.out.println(user.getLastKnownGang());
+    }
+
+    @SubCommand("destroy")
+    @Permission("gang.destroy")
+    @WrongUsage("&c/gang &3destroy <sure>")
+    public void destroy(final Player player, final Boolean bool) {
+        final User user = User.getFromBukkit(player);
+        if (!user.hasGang()) {
+            user.msgC("user","destroy","no-gang");
+            return;
+        }
+        if (user.getGang().get().getRank(user) != Rank.OWNER) {
+            user.msgC("user","destroy","not-owner");
+            return;
+        }
+        if (!bool) {
+            user.msgC("user","destroy","not-sure");
+            return;
+        }
+        user.msg(getSuccessMessage("destroy"));
+        user.getGang().get().destroy();
     }
 
     // Command Utils
 
     @CompleteFor("chat")
-    public List<String> commandCompletion(final List<String> completionArg, final Player player) {
+    public List<String> commandCompletionChat(final List<String> completionArg, final Player player) {
         return Arrays.asList("on", "off");
+    }
+
+
+    @CompleteFor("destroy")
+    public List<String> commandCompletionDestroy(final List<String> completionArg, final Player player) {
+        return Arrays.asList("true", "false");
     }
 
     private static String getFailMessage(final String command) {
