@@ -51,6 +51,7 @@ public class GangImpl implements Gang {
         this.members.clear();
         this.members.putAll(members);
         GangManager.getGangs().add(this);
+        GangManager.getGangsBalance().put(this.name,this.balance);
 
     }
 
@@ -98,11 +99,13 @@ public class GangImpl implements Gang {
     @Override
     public void withdrawBalance(int value) {
         this.balance -= value;
+        GangManager.getGangsBalance().replace(this.name,this.balance);
     }
 
     @Override
     public void depositBalance(int value) {
         this.balance += value;
+        GangManager.getGangsBalance().replace(this.name,this.balance);
     }
 
     @Override
@@ -201,7 +204,7 @@ public class GangImpl implements Gang {
     public void msgCH(@NotNull String[] path, @NotNull Object[] replacements) {
         String message =
                 Configuration.getLanguage().getNode((Object[]) path).getString("default message");
-        message = MessagesHandler.INSTANCE.handleMessage(message, replacements);
+        message = MessagesHandler.INSTANCE.handle(message, replacements);
         if (message.equalsIgnoreCase("")) return;
         for (User user : this.members.keySet()) {
             user.msg(message);

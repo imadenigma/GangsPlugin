@@ -9,6 +9,8 @@ import me.imadenigma.gangsplugin.user.Rank;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.utils.Messenger;
 import me.lucko.helper.gson.GsonSerializable;
+
+import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -60,7 +62,7 @@ public interface Gang extends GsonSerializable, Messenger {
         return new GangImpl(name, balance, minedBlocks, leader, members);
     }
 
-    static Gang getByName(final String name) {
+    static Gang getByName(final String name) throws FileNotFoundException {
         if (GangManager.getGangs().stream().anyMatch(gang -> gang.getName().equalsIgnoreCase(name))) {
             return GangManager.getGangs().stream()
                     .filter(gang -> gang.getName().equalsIgnoreCase(name))

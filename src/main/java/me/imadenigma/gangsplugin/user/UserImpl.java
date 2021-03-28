@@ -5,6 +5,7 @@ import me.imadenigma.gangsplugin.Configuration;
 import me.imadenigma.gangsplugin.economy.EconomyManager;
 import me.imadenigma.gangsplugin.gangs.Gang;
 import me.imadenigma.gangsplugin.utils.MessagesHandler;
+import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.gson.JsonBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -39,12 +40,13 @@ public class UserImpl implements User {
 
     @Override
     public double withdrawBalance(long value) {
-        return EconomyManager.INSTANCE.getEconomylib().withdrawPlayer(this.offlinePlayer,value).amount;
+        return EconomyManager.INSTANCE.getEconomylib().withdrawPlayer(this.offlinePlayer, value).amount;
     }
 
     @Override
     public double depositBalance(long value) {
-        return EconomyManager.INSTANCE.getEconomylib().depositPlayer(this.offlinePlayer,value).amount;    }
+        return EconomyManager.INSTANCE.getEconomylib().depositPlayer(this.offlinePlayer, value).amount;
+    }
 
     @Override
     public UUID getUniqueID() {
@@ -70,7 +72,7 @@ public class UserImpl implements User {
     public void setGang(final Gang gang) {
         if (this.getGang().isPresent()) {
             this.presentGang.kickMember(this);
-            this.presentGang.msgC("gang","playerquit");
+            this.presentGang.msgC("gang", "playerquit");
         }
         if (gang == null) {
             this.chatEnabled = false;
@@ -81,7 +83,6 @@ public class UserImpl implements User {
 
         this.lastKnownGang = gang.getName();
         this.presentGang = gang;
-
     }
 
     @Override
@@ -89,7 +90,6 @@ public class UserImpl implements User {
         this.lastKnownGang = gang.getName();
         this.presentGang = gang;
     }
-
 
     @Override
     public boolean isChatEnabled() {
@@ -108,18 +108,9 @@ public class UserImpl implements User {
 
     @Override
     public void invite(User user) {
-         //A normal member can't invite people
-        new Invite(this,user);
-
-
+        // A normal member can't invite people
+        new Invite(this, user);
     }
-
-
-
-
-
-
-
 
     @Override
     public String getLastKnownGang() {
@@ -131,11 +122,8 @@ public class UserImpl implements User {
         return this.name;
     }
 
-
-
     @Override
-    public Rank
-    getRank() {
+    public Rank getRank() {
         if (this.presentGang == null) return null;
         return this.presentGang.getRank(this);
     }
@@ -148,17 +136,14 @@ public class UserImpl implements User {
     }
 
     @Override
-    public void increaseRank() {
-
-    }
-
+    public void increaseRank() {}
 
     @NotNull
     @Override
     public JsonElement serialize() {
         return JsonBuilder.object()
-                .add("uuid",this.uniqueID.toString())
-                .add("name",this.name)
+                .add("uuid", this.uniqueID.toString())
+                .add("name", this.name)
                 .add("gang", this.lastKnownGang)
                 .build();
     }
@@ -166,28 +151,42 @@ public class UserImpl implements User {
     @Override
     public void msg(@NotNull String msg) {
         if (!this.offlinePlayer.isOnline()) return;
-        this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',msg));
+        this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
     }
 
     @Override
     public void msgC(@NotNull String... path) {
         if (!this.offlinePlayer.isOnline()) return;
-        final String message = Configuration.getLanguage().getNode((Object[]) path).getString("default message");
+        final String message =
+                Configuration.getLanguage().getNode((Object[]) path).getString("default message");
         if (message.equalsIgnoreCase("")) return;
-        this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',message));
+        this.offlinePlayer
+                .getPlayer()
+                .sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     }
 
     @Override
     public void msgH(@NotNull String msg, @NotNull Object... replacements) {
         if (!this.offlinePlayer.isOnline()) return;
-        final String message = MessagesHandler.INSTANCE.handle(msg,replacements);
-        this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',message));
+        final String message = MessagesHandler.INSTANCE.handle(msg, replacements);
+        this.offlinePlayer
+                .getPlayer()
+                .sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     }
 
     @Override
-    public void msgCH(@NotNull String[] path, @NotNull Object[] replacements) {
+    public void msgCH(@NotNull String[] path, @NotNull Object... replacements) {
         if (!this.offlinePlayer.isOnline()) return;
-        final String message = MessagesHandler.INSTANCE.handleMessage(Configuration.getLanguage().getNode((Object[]) path).getString(),replacements);
-        this.offlinePlayer.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',message));
+        ConfigurationNode node = Configuration.getLanguage();
+        for (String word : path) {
+            node = node.getNode(word);
+        }
+        final String message =
+                MessagesHandler.INSTANCE.handle(
+                        node.getString(), replacements
+                );
+        this.offlinePlayer
+                .getPlayer()
+                .sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     }
 }

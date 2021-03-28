@@ -17,7 +17,7 @@ public class GangManager {
     private static final Map<String, Long> gangsBalance = Maps.newHashMap();
     private final File gangsFolder;
 
-    public GangManager(final boolean force) throws FileNotFoundException {
+    public GangManager() throws FileNotFoundException {
         this.gangsFolder = new File(GangsPlugin.getSingleton().getDataFolder() + "/gangs");
         instance = this;
         try {
@@ -27,9 +27,6 @@ public class GangManager {
         }
     }
 
-    public GangManager() {
-        this.gangsFolder = new File(GangsPlugin.getSingleton().getDataFolder() + "/gangs");
-    }
 
 
 
@@ -81,7 +78,7 @@ public class GangManager {
     }
 
     public static GangManager build() {
-        return new GangManager();
+        return instance;
     }
 
     public File getGangsFolder() {

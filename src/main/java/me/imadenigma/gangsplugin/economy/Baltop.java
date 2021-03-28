@@ -1,14 +1,12 @@
 package me.imadenigma.gangsplugin.economy;
 
-import com.google.common.collect.Comparators;
 import com.google.common.collect.Lists;
 import me.imadenigma.gangsplugin.gangs.GangManager;
+import me.imadenigma.gangsplugin.utils.MessagesHandler;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.hologram.Hologram;
 import me.lucko.helper.serialize.Position;
 import org.bukkit.Location;
-
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -19,18 +17,24 @@ public class Baltop {
     private static final int duration = 10;
     private final List<String> sortedLines = Lists.newLinkedList();
     private final Hologram hologram;
+    private final String format;
 
-
-    public Baltop(Location location) {
+    public Baltop(final Location location, final String format) {
         this.location = location;
+        this.format = format;
         reloadCache();
         this.hologram = Hologram.create(Position.of(location), sortedLines);
         display();
         Schedulers.sync()
-                .runRepeating(() -> {
-                    reloadCache();
-                    display();
-                },duration, TimeUnit.SECONDS,duration,TimeUnit.SECONDS);
+                .runRepeating(
+                        () -> {
+                            reloadCache();
+                            display();
+                        },
+                        duration,
+                        TimeUnit.SECONDS,
+                        duration,
+                        TimeUnit.SECONDS);
         INSTANCE = this;
     }
 
@@ -43,11 +47,12 @@ public class Baltop {
 
     private void reloadCache() {
         this.sortedLines.add("§8§m----------------------------------------");
-        GangManager.getGangsBalance().entrySet().stream().sorted(Map.Entry.comparingByValue()).forEachOrdered(entry -> {
-            this.sortedLines.add("Gang : " + entry.getKey() + ";;; balance: " + entry.getValue());
-        });
+        GangManager.getGangsBalance().entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .forEachOrdered(
+                        entry -> this.sortedLines.add(
+                                MessagesHandler.INSTANCE.handle(this.format, entry.getKey(), entry.getValue())));
         this.sortedLines.add("§8§m----------------------------------------");
-
     }
 
     public Hologram getHologram() {

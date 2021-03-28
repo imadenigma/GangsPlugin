@@ -48,4 +48,8 @@ user:
     no-gang: "You have no gang"
     not-enough-balance: "not enough balance"
     success: "your balance now is {0}"
-
+  destroy:
+    no-gang: "You don't own a gang"
+    not-owner: "You aren't the owner to perform this command"
+    success: "Your gang was destroyed successfully"
+    not-sure: "Command was not executed cause you are not sure"

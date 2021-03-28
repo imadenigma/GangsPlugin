@@ -11,7 +11,9 @@ user:
   create:
     failed: "&4You failed"
     success: "&3You created a gang"
-  balance: "&3The balance is {0}"
+  balance:
+    success: "&3The balance is {0}"
+    failed: "Join a gang to perform this command"
   rank: "&3your rank is {0}"
   invite:
     success: "You invited {0} to your clan successfully"

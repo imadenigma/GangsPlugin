@@ -11,21 +11,21 @@ import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import me.lucko.helper.plugin.ap.Plugin;
 import me.lucko.helper.plugin.ap.PluginDependency;
-import me.mattstudios.mf.base.CommandManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-
 @Plugin(
         name = "GangsPlugin",
         version = "1.13",
         apiVersion = "1.13",
-        depends = @PluginDependency("Vault"),
-        authors = "Johan Liebert"
-)
+        depends = {
+                @PluginDependency("Vault"),
+                @PluginDependency("Essentials")
+        },
+        authors = "Johan Liebert")
 public final class GangsPlugin extends ExtendedJavaPlugin {
 
     private static GangsPlugin singleton;
@@ -38,17 +38,15 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
     public void enable() {
         // Plugin startup logic
         singleton = this;
-
-
-
-        //Create gangManager's instance
+        new EconomyManager();
+        // Create gangManager's instance
         try {
-            this.gangManager = new GangManager(true);
+            this.gangManager = new GangManager();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        //Loading users
+        // Loading users
         this.userManager = new UserManager();
         this.userManager.loadUsers();
         try {
@@ -58,12 +56,9 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
             e.printStackTrace();
         }
 
-
         new GangCommands();
         registerListener(new PlayerListeners());
-        new EconomyManager();
         createHolo();
-
     }
 
     @Override
@@ -73,14 +68,11 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         this.gangManager.saveGangs();
         this.balanceTop.getHologram().despawn();
         this.balanceTop.getHologram().closeSilently();
-
     }
-
 
     public static GangsPlugin getSingleton() {
         return singleton;
     }
-
 
     public void createHolo() {
         final ConfigurationNode node = Configuration.getConfig().getNode("holo-location");
@@ -88,9 +80,9 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         final int y = node.getNode("y").getInt(0);
         final int z = node.getNode("z").getInt(0);
         final World world = Helper.worldNullable(node.getNode("world").getString("world"));
-        this.balanceTop = new Baltop(new Location(world,x,y,z));
+        this.balanceTop =
+                new Baltop(
+                        new Location(world, x, y, z),
+                        node.getParent().getNode("holo-format").getString("null"));
     }
-
-
-
 }

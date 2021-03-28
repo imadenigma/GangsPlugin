@@ -16,7 +16,7 @@ class PlayerListeners : Listener {
         if (user.hasGang()) {
             if (user.gang.isPresent) return
             if (user.lastKnownGang == null) return
-            val gang = Gang.getByName(user.lastKnownGang)
+            Gang.getByName(user.lastKnownGang)
             user.msg("&7your gang is loaded !")
             Log.info("the first member of the gang joined ! The gang is loaded , name: ${user.lastKnownGang}")
         }

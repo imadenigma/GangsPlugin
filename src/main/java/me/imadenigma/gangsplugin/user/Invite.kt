@@ -8,13 +8,11 @@ import org.bukkit.Bukkit
 import java.util.concurrent.TimeUnit
 
 
-
-
 class Invite(private val sender: User, private val receiver: User) {
 
     companion object {
         private const val duration = 30 //means 30 seconds
-        val available = mutableMapOf<User,Gang>()
+        val available = mutableMapOf<User, Gang>()
 
         @JvmStatic
         fun acceptInv(user: User, gang: Gang) {
@@ -28,8 +26,8 @@ class Invite(private val sender: User, private val receiver: User) {
         available[receiver] = sender.gang.get()
         Schedulers.sync()
             .runLater({
-                      this.destroy()
-            }, duration.toLong(),TimeUnit.SECONDS)
+                this.destroy()
+            }, duration.toLong(), TimeUnit.SECONDS)
     }
 
     private fun destroy() {
@@ -41,7 +39,7 @@ class Invite(private val sender: User, private val receiver: User) {
         val text = TextComponent("Click here to accept or skip it to decline")
         text.color = net.md_5.bungee.api.ChatColor.AQUA
         text.isBold = true
-        text.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND,"/accept")
+        text.clickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/accept")
 
         Bukkit.getPlayer(this.receiver.uniqueID)?.spigot()?.sendMessage(text)
     }
