@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import me.imadenigma.gangsplugin.GangsPlugin;
+import me.lucko.helper.Helper;
 import me.lucko.helper.gson.GsonProvider;
 import me.lucko.helper.utils.Log;
 import java.io.*;
@@ -13,6 +14,22 @@ public class UserManager {
     private static final Set<User> users = Sets.newHashSet();
 
     private final File file = new File(GangsPlugin.getSingleton().getDataFolder(), "users.json");
+
+    public UserManager() {
+        if (!this.file.exists()) {
+            try {
+                this.file.getParentFile().mkdirs();
+                this.file.createNewFile();
+                Writer writer = new FileWriter(this.file);
+                writer.write("[]");
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Helper.server().getPluginManager().disablePlugin(GangsPlugin.getSingleton());
+            }
+        }
+    }
 
     public void loadUsers() {
         long ms = System.currentTimeMillis();

@@ -3,8 +3,10 @@ package me.imadenigma.gangsplugin;
 import me.imadenigma.gangsplugin.commands.GangCommands;
 import me.imadenigma.gangsplugin.economy.Baltop;
 import me.imadenigma.gangsplugin.economy.EconomyManager;
+import me.imadenigma.gangsplugin.gangs.Gang;
 import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.listeners.PlayerListeners;
+import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.user.UserManager;
 import me.lucko.helper.Helper;
 import me.lucko.helper.config.ConfigurationNode;
@@ -13,6 +15,7 @@ import me.lucko.helper.plugin.ap.Plugin;
 import me.lucko.helper.plugin.ap.PluginDependency;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,7 +26,8 @@ import java.io.IOException;
         apiVersion = "1.13",
         depends = {
                 @PluginDependency("Vault"),
-                @PluginDependency("Essentials")
+                @PluginDependency(value = "Essentials"),
+                @PluginDependency(value = "HolographicDisplays",soft = true)
         },
         authors = "Johan Liebert")
 public final class GangsPlugin extends ExtendedJavaPlugin {
@@ -55,10 +59,10 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         new GangCommands();
         registerListener(new PlayerListeners());
         createHolo();
+        reload();
     }
 
     @Override
@@ -66,8 +70,7 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         // Plugin shutdown logic
         this.userManager.saveUsers();
         this.gangManager.saveGangs();
-        this.balanceTop.getHologram().despawn();
-        this.balanceTop.getHologram().closeSilently();
+        this.balanceTop.getHologram().isDeleted();
     }
 
     public static GangsPlugin getSingleton() {
@@ -84,5 +87,19 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
                 new Baltop(
                         new Location(world, x, y, z),
                         node.getParent().getNode("holo-format").getString("null"));
+    }
+
+    public void reload() {
+        for (Player player : Helper.server().getOnlinePlayers()) {
+            User user = User.getFromBukkit(player);
+            if (user.hasGang()) {
+                if (user.getGang().isPresent()) continue;
+                try {
+                    Gang.getByName(user.getLastKnownGang());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

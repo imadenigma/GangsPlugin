@@ -2,11 +2,9 @@ package me.imadenigma.gangsplugin.gangs;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
 import me.imadenigma.gangsplugin.GangsPlugin;
 import me.lucko.helper.gson.GsonProvider;
 import java.io.*;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,11 +18,15 @@ public class GangManager {
     public GangManager() throws FileNotFoundException {
         this.gangsFolder = new File(GangsPlugin.getSingleton().getDataFolder() + "/gangs");
         instance = this;
-        try {
-            loadBalances();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (!this.gangsFolder.exists()) {
+            this.gangsFolder.mkdirs();
+        }else setup();
+    }
+    public void setup() {
+        for (File file : this.gangsFolder.listFiles()) {
+            loadGang(file.getName().replace(".json",""));
         }
+
     }
 
 
@@ -85,17 +87,12 @@ public class GangManager {
         return gangsFolder;
     }
 
-    public void loadBalances() throws IOException {
-        for (File file : gangsFolder.listFiles()) {
-            Reader reader = new FileReader(file);
-            JsonObject object = GsonProvider.parser().parse(reader).getAsJsonObject();
-            reader.close();
-            gangsBalance.put(object.get("name").getAsString(), object.get("balance").getAsLong());
-        }
-    }
+
 
     public static Map<String, Long> getGangsBalance() {
         return gangsBalance;
     }
+
+
 
 }

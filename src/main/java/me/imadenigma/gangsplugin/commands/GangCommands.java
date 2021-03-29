@@ -19,6 +19,7 @@ import me.mattstudios.mf.base.components.TypeResult;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -71,6 +72,7 @@ public class GangCommands extends CommandBase {
         }
         final Gang gang = new GangImpl(name, user);
         gang.addMember(user);
+        gang.setRank(user, Rank.OWNER);
         user.setGang(gang);
         user.msg(getSuccessMessage("create"));
     }
@@ -82,15 +84,15 @@ public class GangCommands extends CommandBase {
     public void invite(final Player player, final User target) {
         final User user = User.getFromBukkit(player);
         if (Invite.Companion.getAvailable().containsKey(target)) {
-            user.msgC("user","invite","wait");
+            user.msgC("user", "invite", "wait");
             return;
         }
         if (!user.hasGang()) {
-            user.msgC("user","invite","has-no-gang");
+            user.msgC("user", "invite", "has-no-gang");
             return;
         }
         new Invite(user, target);
-        user.msgH(getSuccessMessage("invite"),target.getName());
+        user.msgH(getSuccessMessage("invite"), target.getName());
     }
 
     @SubCommand("kick")
@@ -111,7 +113,11 @@ public class GangCommands extends CommandBase {
             user.msgC("user", "kick", "not-sameGang");
             return;
         }
-        user.msgH(getSuccessMessage("kick"),target.getName());
+        if (user.getGang().get().getLeader().equals(target)) {
+            user.msgC("user", "kick", "leader");
+            return;
+        }
+        user.msgH(getSuccessMessage("kick"), target.getName());
         user.getGang().ifPresent(gang -> gang.kickMember(user));
     }
 
@@ -124,12 +130,14 @@ public class GangCommands extends CommandBase {
 
         if (!user.hasGang()) user.msgC("user", "demote", "user-has-no-gang");
         else if (!target.hasGang()) user.msgC("user", "demote", "target-user-notsame-gang");
-        else if (!user.getGang().get().equals(target.getGang().get())) user.msgC("user", "demote", "target-user-notsame-gang");
-        else if (target.getRank().getLevel() > user.getRank().getLevel()) user.msgC("user", "demote", "no-permission");
-    else {
-      target.decreaseRank();
-      user.msgH(getSuccessMessage("demote"),target.getName());
-            }
+        else if (!user.getGang().get().equals(target.getGang().get()))
+            user.msgC("user", "demote", "target-user-notsame-gang");
+        else if (target.getRank().getLevel() > user.getRank().getLevel())
+            user.msgC("user", "demote", "no-permission");
+        else {
+            target.decreaseRank();
+            user.msgH(getSuccessMessage("demote"), target.getName());
+        }
     }
 
     @SubCommand("promote")
@@ -138,12 +146,13 @@ public class GangCommands extends CommandBase {
     @Completion("#gang-players")
     public void promote(final Player player, final User target) {
         final User user = User.getFromBukkit(player);
-        if (!user.hasGang()) user.msgC("user","promote","user-has-no-gang");
-        else if (!target.hasGang()) user.msgC("user","promote","target-user-notsame-gang");
-        else if (!user.getGang().get().equals(target.getGang().get())) user.msgC("user","promote","target-user-notsame-gang");
-        else if (target.getRank().getLevel() > user.getRank().getLevel()) user.msgC("user","promote","no-permission");
-        else
-            target.increaseRank();
+        if (!user.hasGang()) user.msgC("user", "promote", "user-has-no-gang");
+        else if (!target.hasGang()) user.msgC("user", "promote", "target-user-notsame-gang");
+        else if (!user.getGang().get().equals(target.getGang().get()))
+            user.msgC("user", "promote", "target-user-notsame-gang");
+        else if (target.getRank().getLevel() > user.getRank().getLevel())
+            user.msgC("user", "promote", "no-permission");
+        else target.increaseRank();
     }
 
     @SubCommand("deposit")
@@ -154,13 +163,15 @@ public class GangCommands extends CommandBase {
         final User user = User.getFromBukkit(player);
         if (!user.hasGang()) {
             user.msgC("user", "deposit", "no-gang");
-        } else if (user.getGang().get().getBalance() < amount) {
-            user.msgC("user","deposit","not-enough-balance");
+        } else if (user.getBalance() < amount) {
+            user.msgC("user", "deposit", "not-enough-balance");
         } else {
-            user.msg("your balance:" + user.getBalance());
+
             user.getGang().get().depositBalance(amount);
             user.withdrawBalance(amount);
-            user.msgH(getSuccessMessage("deposit"),user.getBalance());
+            user.msg("&7your balance now : &3" + user.getBalance());
+            user.msg("&7your Gang's balance now : &3" + user.getGang().get().getBalance());
+
         }
     }
 
@@ -173,11 +184,12 @@ public class GangCommands extends CommandBase {
         if (!user.hasGang()) {
             user.msgC("user", "withdraw", "no-gang");
         } else if (user.getGang().get().getBalance() < amount) {
-            user.msgC("user","withdraw","not-enough-balance");
+            user.msgC("user", "withdraw", "not-enough-balance");
         } else {
             user.getGang().get().withdrawBalance(amount);
             user.depositBalance(amount);
-            user.msgH(getSuccessMessage("withdraw"),user.getBalance());
+            user.msg("&7your balance now : &3" + user.getBalance());
+            user.msg("&7your Gang's balance now : &3" + user.getGang().get().getBalance());
         }
     }
 
@@ -199,7 +211,6 @@ public class GangCommands extends CommandBase {
         if (user.hasGang()) {
             user.msgH(getSuccessMessage("balance"), user.getGang().get().getBalance());
         } else user.msg(getFailMessage("balance"));
-
     }
 
     @SubCommand("rank")
@@ -208,7 +219,7 @@ public class GangCommands extends CommandBase {
     public void rank(final Player player) {
         final User user = User.getFromBukkit(player);
         if (user.hasGang()) {
-          user.msg(MessagesHandler.INSTANCE.handle(getSuccessMessage("rank"), user.getRank().name()));
+            user.msg(MessagesHandler.INSTANCE.handle(getSuccessMessage("rank"), user.getRank().name()));
         } else user.msg(getFailMessage("rank"));
     }
 
@@ -217,9 +228,17 @@ public class GangCommands extends CommandBase {
     @WrongUsage("&c/gang &3chat <on/off>")
     public void chat(final Player player, final String toggle) {
         final User user = User.getFromBukkit(player);
-        if (toggle.equalsIgnoreCase("on")) user.enableChat();
-        else if (toggle.equalsIgnoreCase("off")) user.disableChat();
-
+        if (!user.hasGang()) {
+            user.msg(getFailMessage("chat"));
+        }
+        if (toggle.equalsIgnoreCase("on")) {
+            user.enableChat();
+            user.msgC("user","chat","on");
+        }
+        else if (toggle.equalsIgnoreCase("off")) {
+            user.disableChat();
+            user.msgC("user","chat","off");
+        }
     }
 
     @SubCommand("rename")
@@ -233,7 +252,7 @@ public class GangCommands extends CommandBase {
         }
         if (Arrays.stream(GangManager.build().getGangsFolder().listFiles())
                 .anyMatch(
-                        file -> file.getName().equalsIgnoreCase(newName) || file.getName().contains(newName))) {
+                        file -> file.getName().equalsIgnoreCase(newName) || file.getName().contains(newName) || newName.contains(file.getName()))) {
             user.msg(getFailMessage("rename"));
             return;
         }
@@ -241,8 +260,9 @@ public class GangCommands extends CommandBase {
         Arrays.stream(GangManager.build().getGangsFolder().listFiles())
                 .filter(file -> file.getName().equalsIgnoreCase(user.getLastKnownGang()))
                 .findAny()
-                .get()
-                .renameTo(new File(GangManager.build().getGangsFolder(), newName + ".json"));
+                .ifPresent(fi ->
+                fi.renameTo(new File(GangManager.build().getGangsFolder(), newName + ".json"))
+        );
         user.getGang().get().setName(newName);
     }
 
@@ -256,6 +276,8 @@ public class GangCommands extends CommandBase {
             return;
         }
         user.msgH(getSuccessMessage("name"), user.getGang().get().getName());
+        user.msg("1");
+        player.sendMessage("2");
     }
 
     @SubCommand("destroy")
@@ -264,15 +286,15 @@ public class GangCommands extends CommandBase {
     public void destroy(final Player player, final Boolean bool) {
         final User user = User.getFromBukkit(player);
         if (!user.hasGang()) {
-            user.msgC("user","destroy","no-gang");
+            user.msgC("user", "destroy", "no-gang");
             return;
         }
         if (user.getGang().get().getRank(user) != Rank.OWNER) {
-            user.msgC("user","destroy","not-owner");
+            user.msgC("user", "destroy", "not-owner");
             return;
         }
         if (!bool) {
-            user.msgC("user","destroy","not-sure");
+            user.msgC("user", "destroy", "not-sure");
             return;
         }
         user.msg(getSuccessMessage("destroy"));
@@ -286,9 +308,9 @@ public class GangCommands extends CommandBase {
         return Arrays.asList("on", "off");
     }
 
-
     @CompleteFor("destroy")
-    public List<String> commandCompletionDestroy(final List<String> completionArg, final Player player) {
+    public List<String> commandCompletionDestroy(
+            final List<String> completionArg, final Player player) {
         return Arrays.asList("true", "false");
     }
 

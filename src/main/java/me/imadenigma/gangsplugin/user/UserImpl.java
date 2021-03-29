@@ -29,8 +29,6 @@ public class UserImpl implements User {
         this.presentGang = null;
         this.lastKnownGang = gangname;
         UserManager.getUsers().add(this);
-        if (EconomyManager.INSTANCE.getEconomylib().hasAccount(this.offlinePlayer))
-            EconomyManager.INSTANCE.getEconomylib().createPlayerAccount(this.offlinePlayer);
     }
 
     @Override
@@ -136,7 +134,11 @@ public class UserImpl implements User {
     }
 
     @Override
-    public void increaseRank() {}
+    public void increaseRank() {
+        if (this.presentGang != null) {
+            this.presentGang.decreaseRank(this);
+        }
+    }
 
     @NotNull
     @Override

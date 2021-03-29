@@ -160,6 +160,13 @@
             <version>1.4.6</version> <!-- replace version here -->
         </dependency>
 
+        <!--HOLOGRAPHIC DISPLAYS-->
+        <dependency>
+            <groupId>com.gmail.filoghost.holographicdisplays</groupId>
+            <artifactId>holographicdisplays-api</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
         <!--Junit for unit Testing-->
         <dependency>
             <groupId>junit</groupId>
@@ -174,7 +181,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
+            <artifactId>kotlin-test-junit</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
@@ -194,6 +201,10 @@
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>aikar</id>

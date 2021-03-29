@@ -3,4 +3,4 @@ holo-location:
   y: 100
   z: 100
   world: "world"
-holo-format: "&b{0} &8&l------------------------&r&e{1}"
+holo-format: "§b{0} §8§l------------------------§r§e{1}"

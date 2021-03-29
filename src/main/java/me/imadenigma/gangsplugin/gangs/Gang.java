@@ -41,6 +41,8 @@ public interface Gang extends GsonSerializable, Messenger {
 
     void increaseRank(final User user);
 
+    void setRank(final User user, final Rank rank);
+
     void decreaseRank(final User user);
 
     void increaseMinedBlocks();
@@ -79,4 +81,5 @@ public interface Gang extends GsonSerializable, Messenger {
     }
 
     Rank getRank(User user);
+
 }

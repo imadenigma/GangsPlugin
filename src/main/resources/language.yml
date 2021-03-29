@@ -14,7 +14,9 @@ user:
   balance:
     success: "&3The balance is {0}"
     failed: "Join a gang to perform this command"
-  rank: "&3your rank is {0}"
+  rank:
+    success: "&3your rank is {0}"
+    failed: "&4Join a gang to perform this command"
   invite:
     success: "You invited {0} to your clan successfully"
     has-no-gang: "You have not the permission to execute this command"
@@ -41,6 +43,10 @@ user:
   name:
     failed: "You have no gang"
     success: "Your gang's name is {0}"
+  chat:
+    on: "&aYour gang chat is enabled now!"
+    off: "&cYour gang chat is enabled now!"
+    failed: "&4You should belong to a gang to perform this command"
   rename:
     failed: "You can;t"
     success: "your gang name now is {0}"

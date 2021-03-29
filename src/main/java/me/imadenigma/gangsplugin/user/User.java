@@ -52,7 +52,7 @@ public interface User extends GsonSerializable, Messenger, Economy {
     static User getFromBukkit(final Player player) {
         Preconditions.checkNotNull(player, "Player may not be null");
         final Optional<User> optional = UserManager.getUsers().stream().filter(user -> user.getUniqueID().equals(player.getUniqueId())).findAny();
-        return optional.orElseGet(() -> new UserImpl(player.getName(),  Players.getOffline(player.getUniqueId()).get()));
+        return optional.orElseGet(() -> new UserImpl(null,  Players.getOffline(player.getUniqueId()).get()));
     }
 
     static User getFromUUID(final UUID uniqueID) {
@@ -65,7 +65,10 @@ public interface User extends GsonSerializable, Messenger, Economy {
         final JsonObject object = element.getAsJsonObject();
         final UUID uuid = UUID.fromString(object.get("uuid").getAsString());
         final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-        final String gang = object.get("gang").getAsString();
+        String gang = null;
+        try{
+           gang = object.get("gang").getAsString();
+        }catch (UnsupportedOperationException ignored) {}
         return new UserImpl(gang,offlinePlayer);
     }
 

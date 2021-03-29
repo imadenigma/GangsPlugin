@@ -138,6 +138,13 @@ public class GangImpl implements Gang {
     }
 
     @Override
+    public void setRank(User user, Rank rank) {
+        if (this.members.get(user) != null) {
+            this.members.replace(user,rank);
+        }
+    }
+
+    @Override
     public void decreaseRank(User user) {
         if (this.members.get(user) != null && user.getRank() != Rank.CoLeader && user.getRank() != Rank.MEMBER) {
             this.members.replace(user, Arrays.stream(Rank.values()).filter(a -> a.getLevel() == this.members.get(user).getLevel() - 1).findAny().get());
