@@ -4,3 +4,5 @@ holo-location:
   z: 100
   world: "world"
 holo-format: "§b{0} §8§l------------------------§r§e{1}"
+gangs:
+  max-members: 5

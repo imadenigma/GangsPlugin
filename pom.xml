@@ -166,6 +166,12 @@
             <artifactId>holographicdisplays-api</artifactId>
             <version>2.4.0</version>
         </dependency>
+        <!--PAPI-->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.10.9</version>
+        </dependency>
 
         <!--Junit for unit Testing-->
         <dependency>
@@ -207,8 +213,8 @@
             <url>https://repo.codemc.io/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>aikar</id>
-            <url>https://repo.aikar.co/content/groups/aikar/</url>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
     </repositories>
 </project>

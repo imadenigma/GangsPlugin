@@ -8,6 +8,7 @@ import me.imadenigma.gangsplugin.gangs.GangManager;
 import me.imadenigma.gangsplugin.listeners.PlayerListeners;
 import me.imadenigma.gangsplugin.user.User;
 import me.imadenigma.gangsplugin.user.UserManager;
+import me.imadenigma.gangsplugin.utils.PAPI;
 import me.lucko.helper.Helper;
 import me.lucko.helper.config.ConfigurationNode;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
@@ -16,7 +17,6 @@ import me.lucko.helper.plugin.ap.PluginDependency;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -27,7 +27,8 @@ import java.io.IOException;
         depends = {
                 @PluginDependency("Vault"),
                 @PluginDependency(value = "Essentials"),
-                @PluginDependency(value = "HolographicDisplays",soft = true)
+                @PluginDependency(value = "HolographicDisplays",soft = true),
+                @PluginDependency(value = "PlaceholderAPI",soft = true)
         },
         authors = "Johan Liebert")
 public final class GangsPlugin extends ExtendedJavaPlugin {
@@ -63,6 +64,7 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         registerListener(new PlayerListeners());
         createHolo();
         reload();
+        new PAPI().register();
     }
 
     @Override

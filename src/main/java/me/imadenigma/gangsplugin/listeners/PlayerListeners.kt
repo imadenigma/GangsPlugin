@@ -37,6 +37,9 @@ class PlayerListeners : Listener {
     fun textingEvent(e: AsyncPlayerChatEvent) {
         val user = User.getFromBukkit(e.player)
         if (!user.hasGang()) return
+        if (e.message.contains("%gang%")) {
+            if (e.message.contains("%gang% name",true)) e.message
+        }
         if (!user.isChatEnabled) return
         e.recipients.clear()
         e.recipients.addAll(
