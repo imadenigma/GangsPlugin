@@ -44,6 +44,11 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
         // Plugin startup logic
         singleton = this;
         new EconomyManager();
+
+        // Loading users
+        this.userManager = new UserManager();
+        this.userManager.loadUsers();
+
         // Create gangManager's instance
         try {
             this.gangManager = new GangManager();
@@ -51,9 +56,6 @@ public final class GangsPlugin extends ExtendedJavaPlugin {
             e.printStackTrace();
         }
 
-        // Loading users
-        this.userManager = new UserManager();
-        this.userManager.loadUsers();
         try {
 
             new Configuration();

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class Invite(private val sender: User, private val receiver: User) {
 
     companion object {
-        private const val duration = 30 //means 30 seconds
+        private const val duration = 30 // 30 seconds
         val available = mutableMapOf<User, Gang>()
 
         @JvmStatic
